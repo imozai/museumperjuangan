@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && a2enmod rewrite headers
 
 # 2. Gunakan Composer versi 1 (Lebih aman untuk project Laravel 7 lama)
-COPY --from=composer:1 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 WORKDIR /var/www/html
@@ -31,7 +31,7 @@ COPY composer.json composer.lock ./
 # 4. Hapus cache jika ada dan install
 RUN composer clear-cache || true
 # Ganti perintah RUN composer install sebelumnya dengan ini
-RUN composer update --no-dev --no-interaction --no-scripts --ignore-platform-reqs
+RUN composer install --no-dev --no-interaction --no-scripts --ignore-platform-reqs
 
 COPY . .
 
