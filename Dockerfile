@@ -30,14 +30,8 @@ COPY composer.json composer.lock ./
 
 # 4. Hapus cache jika ada dan install
 RUN composer clear-cache || true
-RUN composer install \
-    --no-dev \
-    --no-interaction \
-    --no-progress \
-    --prefer-dist \
-    --optimize-autoloader \
-    --no-scripts \
-    --ignore-platform-reqs
+# Ganti perintah RUN composer install sebelumnya dengan ini
+RUN composer update --no-dev --no-interaction --no-scripts --ignore-platform-reqs
 
 COPY . .
 
@@ -47,5 +41,10 @@ RUN composer dump-autoload --optimize \
     && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R ug+rwX storage bootstrap/cache
+
+# Tambahkan ini sebelum EXPOSE 80
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
 
 EXPOSE 80
