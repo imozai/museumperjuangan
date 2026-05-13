@@ -1,5 +1,6 @@
 FROM php:7.4-apache
 
+ENV COMPOSER_MEMORY_LIMIT=-1
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 WORKDIR /var/www/html
 
@@ -39,7 +40,8 @@ RUN composer install \
     --no-progress \
     --prefer-dist \
     --optimize-autoloader \
-    --no-scripts
+    --no-scripts \
+    --ignore-platform-reqs
 
 COPY . .
 
