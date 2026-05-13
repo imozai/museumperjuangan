@@ -30,10 +30,13 @@ COPY composer.json composer.lock ./
 
 # 4. Hapus cache jika ada dan install
 RUN composer clear-cache || true
+
+COPY . .
+
 # Ganti perintah RUN composer install sebelumnya dengan ini
 RUN composer install --no-dev --no-interaction --no-scripts --ignore-platform-reqs
 
-COPY . .
+
 
 # Lanjutkan sisa perintah...
 RUN composer dump-autoload --optimize \
