@@ -34,7 +34,7 @@ RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framewor
 RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress --no-scripts
 
 # 7. Finalisasi
-EXPOSE 80
+EXPOSE 5555
 
 # Gunakan command default apache agar tidak butuh entrypoint.sh eksternal
 CMD ["apache2-foreground"]
