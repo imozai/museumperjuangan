@@ -1,48 +1,74 @@
-FROM php:7.4-apache
+FROM php:8.2-apache
 
-# 1. Install dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-    git \
-    unzip \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    libpng-dev \
-    libzip-dev \
-    libonig-dev \
-    libxml2-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" bcmath exif gd mbstring opcache pcntl pdo_mysql zip \
-    && a2enmod rewrite headers
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public \
+    COMPOSER_ALLOW_SUPERUSER=1
 
-# 2. Gunakan Composer (Gunakan versi 2 tidak apa-apa, asal project mendukung)
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 WORKDIR /var/www/html
 
-# 3. Konfigurasi Composer
-ENV COMPOSER_MEMORY_LIMIT=-1
-ENV COMPOSER_PROCESS_TIMEOUT=600
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    unzip \
+    zip \
+    libcurl4-openssl-dev \
+    libfreetype6-dev \
+    libicu-dev \
+    libjpeg62-turbo-dev \
+    libonig-dev \
+    libpng-dev \
+    libxml2-dev \
+    libzip-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"$(nproc)" \
+    bcmath \
+    curl \
+    exif \
+    gd \
+    intl \
+    mbstring \
+    pdo_mysql \
+    xml \
+    zip \
+    && a2enmod rewrite \
+    && sed -ri "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-available/*.conf \
+    && printf "<Directory %s>\n    AllowOverride All\n    Require all granted\n</Directory>\n" "${APACHE_DOCUMENT_ROOT}" > /etc/apache2/conf-available/laravel.conf \
+    && a2enconf laravel \
+    && rm -rf /var/lib/apt/lists/*
 
-# --- PERBAIKAN DI SINI ---
-# 4. Salin SEMUA file terlebih dahulu agar folder database/seeds tersedia
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
 COPY . .
 
-# 5. Hapus cache dan jalankan install dengan --no-autoloader
-# Trik --no-autoloader ini agar composer tidak scanning folder sebelum instalasi selesai
-RUN composer clear-cache || true \
-    && composer install --no-dev --no-interaction --no-scripts --ignore-platform-reqs --no-autoloader
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/public/assets \
+    && chmod -R 775 /var/www/html/storage /var/www/html/public/assets
 
-# 6. Jalankan dump-autoload secara manual setelah semua file ter-copy
-RUN composer dump-autoload --optimize \
-    && php artisan package:discover --ansi
+RUN rm -f .htaccess \
+    && mkdir -p storage/app/public storage/framework/cache storage/framework/sessions storage/framework/testing storage/framework/views bootstrap/cache \
+    && composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R ug+rwx storage bootstrap/cache
 
-# 7. Set Permission
-RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache \
-    && chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 storage bootstrap/cache
+# Pastikan ini setelah COPY . .
+RUN mkdir -p /var/www/html/storage \
+             /var/www/html/bootstrap/cache \
+                          /var/www/html/public/storage/files \
+                                       /var/www/html/public/assets/image/users
 
-# Sesuaikan port Apache (default 80, jika ingin 5555 harus ubah config apache juga)
-EXPOSE 80
+                                       RUN chown -R www-data:www-data /var/www/html/storage \
+                                           /var/www/html/bootstrap/cache \
+                                               /var/www/html/public/storage \
+                                                   /var/www/html/public/assets
+
+                                                   RUN chmod -R 775 /var/www/html/storage \
+                                                       /var/www/html/bootstrap/cache \
+                                                           /var/www/html/public/storage \
+                                                               /var/www/html/public/assets
+
+COPY docker/php.ini /usr/local/etc/php/conf.d/dokploy.ini
+COPY docker/entrypoint.sh /usr/local/bin/app-entrypoint
+
+RUN chmod +x /usr/local/bin/app-entrypoint
+
+EXPOSE 5555
+
+ENTRYPOINT ["app-entrypoint"]
+CMD ["apache2-foreground"]
