@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:7.4-apache
 
 # 1. Konfigurasi Dasar
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public \
