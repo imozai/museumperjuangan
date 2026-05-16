@@ -1,6 +1,5 @@
-# Multi-stage build untuk production (optimized untuk Dokploy)
 # Stage 1: Builder - Install dependencies
-FROM php:7.4-apache as builder
+FROM php:7.4-apache AS builder
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 WORKDIR /var/www/html
@@ -54,6 +53,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libzip4 \
     libonig5 \
     libxml2 \
+    zlib1g \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j"$(nproc)" \
         bcmath \
