@@ -63,8 +63,8 @@ RUN mkdir -p /var/www/html/storage \
                                                            /var/www/html/public/storage \
                                                                /var/www/html/public/assets
 
-COPY docker/php.ini /usr/local/etc/php/conf.d/dokploy.ini
-COPY docker/entrypoint.sh /usr/local/bin/app-entrypoint
+COPY php.ini /usr/local/etc/php/conf.d/dokploy.ini
+COPY entrypoint.sh /usr/local/bin/app-entrypoint
 
 RUN chmod +x /usr/local/bin/app-entrypoint
 
