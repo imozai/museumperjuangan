@@ -1,0 +1,25 @@
+version: '3.8'
+
+# Override file for local development
+# This file is automatically loaded after docker-compose.yml when running locally
+# To use: just run `docker-compose up` without specifying this file
+
+services:
+  app:
+    # Enable debug mode for development
+    environment:
+      - APP_DEBUG=true
+      - APP_ENV=local
+    # Volume mount for live code editing
+    volumes:
+      - ./:/var/www/html
+      - ./storage:/var/www/html/storage
+      - ./bootstrap/cache:/var/www/html/bootstrap/cache
+    # Expose container for debugging
+    ports:
+      - "80:80"
+
+  db:
+    # Keep MySQL port accessible for tools
+    ports:
+      - "3306:3306"
