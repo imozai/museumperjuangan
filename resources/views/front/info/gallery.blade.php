@@ -19,14 +19,14 @@
 	<div class="row">
 		<div class="col-md-6">
 			<div class="w3-display-container w3-container">
-				<img src="{{ url('uploads/compress/l_atas.jpg') }}" alt="Jeans"  style="border-radius: 5%; width:80%">
+				<img src="{{ url('uploads/compress/l_atas.JPG') }}" alt="Jeans"  style="border-radius: 5%; width:80%">
 			</div>
 			<br>
 			<a class="btn primary-btn text-uppercase mb-4" style="border-radius: 10%;" href="lantai_atas">Koleksi Lantai Atas</a>
 		</div>
 		<div class="col-md-6">
 			<div class="w3-display-container w3-container">
-				<img src="{{ url('uploads/compress/l_bawah.jpg') }}" alt="Jeans" style="border-radius: 5%; width:80%">
+				<img src="{{ url('uploads/compress/l_bawah.JPG') }}" alt="Jeans" style="border-radius: 5%; width:80%">
 			</div>
 			<br>
 			<a class="btn primary-btn text-uppercase mb-4" style="border-radius: 10%;" href="lantai_bawah">Koleksi Lantai Bawah</a>
