@@ -1,4 +1,10 @@
 #!/bin/sh
+# Masuk ke direktori aplikasi
+cd /var/www/html
+
+# Paksa izin folder agar Laravel bisa menulis log dan cache
+chmod -R 777 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
 
 # Jalankan PHP-FPM di background
 php-fpm -D
