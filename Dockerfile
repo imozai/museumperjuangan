@@ -1,44 +1,35 @@
+# Gunakan versi yang lebih spesifik dan stabil
 FROM php:7.3-fpm-alpine
 
-# Install system dependencies
-# Alpine versi lama menggunakan library yang sedikit berbeda
+# Install minimal dependencies saja
 RUN apk add --no-cache \
     nginx \
     libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    zip \
     libzip-dev \
+    zip \
     unzip \
-    git \
-    curl \
-    icu-dev \
     oniguruma-dev
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath gd
+# Install extension PHP yang paling penting saja
+RUN docker-php-ext-install pdo_mysql mbstring zip gd
 
-# Install Composer
+# Copy composer dari official image (lebih cepat daripada download)
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy project files
+# Copy file project
 COPY . .
 
-# Setup Nginx config
+# Konfigurasi Nginx
 COPY ./nginx.conf /etc/nginx/http.d/default.conf
 
-# Install dependencies 
-# Tambahan --ignore-platform-reqs untuk menghindari masalah library sistem di PHP lama
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+# Jalankan composer install dengan mode super hemat resource
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs --no-interaction --no-progress
 
-# Permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Set permission
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Script entrypoint
 COPY ./entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
