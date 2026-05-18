@@ -11,7 +11,7 @@ RUN apk add --no-cache \
     oniguruma-dev
 
 # Install extension PHP yang paling penting saja
-RUN docker-php-ext-install pdo_mysql mbstring zip gd
+RUN docker-php-ext-install pdo pdo_mysql mbstring zip gd
 
 # Copy composer dari official image (lebih cepat daripada download)
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
@@ -28,7 +28,8 @@ COPY ./nginx.conf /etc/nginx/http.d/default.conf
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs --no-interaction --no-progress
 
 # Set permission
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 COPY ./entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
