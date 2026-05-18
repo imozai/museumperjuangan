@@ -1,67 +1,66 @@
 version: '3.8'
 
 services:
+  # 1. Database Service
+  db:
+    image: mysql:8.0
+    container_name: museum-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: museum_db
+      MYSQL_ROOT_PASSWORD: root_password_anda
+      MYSQL_USER: museum_user
+      MYSQL_PASSWORD: user_password_anda
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - museum-network
+
+  # 2. PHPMyAdmin Service (Port 80 sesuai screenshot)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: museum-phpmyadmin
+    restart: always
+    ports:
+      - "80:80"
+    environment:
+      PMA_HOST: db
+      PMA_ARBITRARY: 1
+    networks:
+      - museum-network
+    depends_on:
+      - db
+
+  # 3. Laravel Application Service (Port 5555 sesuai screenshot)
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: museumperjuangan_app
-    restart: unless-stopped
-    working_dir: /var/www/html
-    environment:
-      - APP_ENV=${APP_ENV:-production}
-      - APP_DEBUG=${APP_DEBUG:-false}
-      - APP_KEY=${APP_KEY}
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_DATABASE=${DB_DATABASE:-museumperjuangan}
-      - DB_USERNAME=${DB_USERNAME:-laravel}
-      - DB_PASSWORD=${DB_PASSWORD:-laravel}
-      - CACHE_DRIVER=${CACHE_DRIVER:-file}
-      - QUEUE_CONNECTION=${QUEUE_CONNECTION:-sync}
-    volumes:
-      - ./:/var/www/html
-      - ./storage:/var/www/html/storage
-      - ./bootstrap/cache:/var/www/html/bootstrap/cache
+    container_name: museum-app
+    restart: always
     ports:
-      - "${APP_PORT:-80}:80"
+      - "5555:80"
+    environment:
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      APP_URL: https://ta.syahdan.my.id
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: museum_db
+      DB_USERNAME: museum_user
+      DB_PASSWORD: user_password_anda
+    volumes:
+      - .:/var/www/html
+      - ./storage:/var/www/html/storage
     networks:
-      - museumperjuangan_network
+      - museum-network
     depends_on:
       - db
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  db:
-    image: mysql:8.0
-    container_name: museumperjuangan_db
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-museumperjuangan}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-laravel}
-      MYSQL_USER: ${DB_USERNAME:-laravel}
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./museumperjuangan.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    ports:
-      - "${DB_PORT:-3306}:3306"
-    networks:
-      - museumperjuangan_network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-volumes:
-  mysql_data:
-    driver: local
 
 networks:
-  museumperjuangan_network:
+  museum-network:
     driver: bridge
+
+volumes:
+  db_data:
